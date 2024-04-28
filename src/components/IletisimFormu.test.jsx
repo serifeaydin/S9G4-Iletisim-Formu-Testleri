@@ -1,59 +1,122 @@
 import { afterEach, beforeEach, expect, test } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  getByLabelText,
+  getByRole,
+} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import userEvent from '@testing-library/user-event';
 import fs from 'fs';
 import path from 'path';
+import IletisimFormu from './IletisimFormu';
 
 //eksik import buraya
 //fixin tuzağı buraya? detaylar readme dosyasında.
 
+beforeEach(() => {
+  render(<IletisimFormu />);
+});
+
 test('[1] hata olmadan render ediliyor', () => {
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin!!!');
+  //render(<IletisimFormu />);
 });
 
 test('[2] iletişim formu headerı render ediliyor', () => {
-  //get by text ile h1 tagini yakalayın
-  //to be in the document, to be truthy, to have text content ile kontrol edin.
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
+  //render(<IletisimFormu />);
+  const title = screen.getByText('İletişim Formu');
+  expect(title).toBeInTheDocument();
+  expect(title).toBeTruthy();
+  expect(title).toHaveTextContent('İletişim Formu');
 });
 
 test('[3] kullanıcı adını 5 karakterden az girdiğinde BİR hata mesajı render ediyor.', async () => {
+  const name = screen.getByLabelText('Ad*');
+  userEvent.type(name, '123');
+  const error = await screen.findAllByTestId('error');
+  expect(error).toHaveLength(1);
   //get by label text ile name alanını yakalayınız
   //find all by test id ile error mesajlarını yakalayın
   //to have length ile kontrol edin.
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
 });
 
 test('[4] kullanıcı inputları doldurmadığında ÜÇ hata mesajı render ediliyor.', async () => {
+  const button = screen.getByRole('button');
+  userEvent.click(button);
+  const error = await screen.findAllByTestId('error');
+  expect(error).toHaveLength(3);
+
   //hiç bir alanı doldurmadan get by role ile butonu yakalayın
   //error mesajlarının to have lengthine bakarak kontrol edin
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
 });
 
 test('[5] kullanıcı doğru ad ve soyad girdiğinde ama email girmediğinde BİR hata mesajı render ediliyor.', async () => {
+  const name = screen.getByTestId('name-input');
+  const lastName = screen.getByTestId('lastName-input');
+
+  userEvent.type(name, '12345');
+  userEvent.type(lastName, '123');
+
+  const button = screen.getByRole('button');
+  userEvent.click(button);
+
+  const error = await screen.findAllByTestId('error');
+  expect(error).toHaveLength(1);
+
   //get by test id ile input alanlarını yakalayın
   //error mesajlarının to have lengthine bakarak kontrol edin
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
 });
 
 test('[6] geçersiz bir mail girildiğinde "Hata: email geçerli bir email adresi olmalıdır." hata mesajı render ediliyor', async () => {
+  const email = screen.getByTestId('email-input');
+  userEvent.type(email, '123');
+  const error = await screen.findByTestId('error');
+  expect(error).toHaveTextContent(
+    'Hata: email geçerli bir email adresi olmalıdır.'
+  );
+
   //errorı get by test id ile yakalayın
   //to have text content ile hata metnini kontrol edin
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
 });
 
 test('[7] soyad girilmeden gönderilirse "Hata: soyad gereklidir." mesajı render ediliyor', async () => {
+  const button = screen.getByRole('button');
+  userEvent.click(button);
+  const errorText = await screen.findByText('Hata: soyad gereklidir.');
+  expect(errorText).toBeInTheDocument();
   //find by text ve to be in the document ile hata metni ekranda mı kontrol edin
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
 });
 
 test('[8] ad, soyad, email render ediliyor. mesaj bölümü doldurulmadığında hata mesajı render edilmiyor.', async () => {
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
+  const name = screen.getByTestId('name-input');
+  const lastName = screen.getByTestId('lastName-input');
+  const email = screen.getByTestId('email-input');
+
+  userEvent.type(name, 'Şerife');
+  userEvent.type(lastName, 'Aydın');
+  userEvent.type(email, 'serifeaydin@gmail.com');
+
+  const button = screen.getByRole('button');
+  userEvent.click(button);
+
+  const renderedName = await screen.findByTestId('firstnameDisplay');
+  const renderedSurname = await screen.findByTestId('lastnameDisplay');
+  const renderedEmail = await screen.findByTestId('emailDisplay');
+
+  expect(renderedName).toBeInTheDocument();
+  expect(renderedSurname).toBeInTheDocument();
+  expect(renderedEmail).toBeInTheDocument();
 });
 
 test('[9] form gönderildiğinde girilen tüm değerler render ediliyor.', async () => {
-  expect('kodlarınızı yazınca').toBe('bu assertionı silin');
+  const button = screen.getByRole('button');
+  userEvent.click(button);
+
+  const name = screen.getByTestId('name-input');
+  const lastName = screen.getByTestId('lastName-input');
+  const email = screen.getByTestId('email-input');
 });
 
 //
